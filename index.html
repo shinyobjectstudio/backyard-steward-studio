@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE BACKYARD STEWARD — Script Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e1210; --surface: #141915; --surface2: #1a201b; --surface3: #212821;
+  --border: #232b23; --border2: #303b2f; --accent: #6fa050; --accent2: #b0662a;
+  --accent3: #2a7d6e; --text: #e6ece3; --text2: #9aa895; --text3: #58635a;
+  --green: #3a8a52; --green-light: #4faa63; --yellow: #c4880a; --red: #b03020;
+  --radius: 2px; --font-head: 'Bebas Neue', sans-serif;
+  --font-body: 'DM Sans', sans-serif; --font-mono: 'DM Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+.header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; gap: 16px; height: 52px; position: sticky; top: 0; z-index: 100; }
+.logo { font-family: var(--font-head); font-size: 22px; letter-spacing: 0.05em; color: var(--accent); line-height: 1; flex-shrink: 0; }
+.logo span { color: var(--text3); font-size: 13px; letter-spacing: 0.12em; margin-left: 10px; font-family: var(--font-mono); }
+.header-rule { flex: 1; height: 1px; background: var(--border); }
+.version-tag { font-family: var(--font-mono); font-size: 11px; color: var(--text3); letter-spacing: 0.08em; }
+.tab-nav { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; padding: 0 24px; gap: 2px; overflow-x: auto; }
+.tab-nav::-webkit-scrollbar { display: none; }
+.tab-btn { background: none; border: none; border-bottom: 2px solid transparent; color: var(--text3); cursor: pointer; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; padding: 13px 18px 11px; transition: color 0.15s, border-color 0.15s; white-space: nowrap; display: flex; align-items: center; gap: 7px; text-transform: uppercase; }
+.tab-btn:hover { color: var(--text2); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.step-num { background: var(--surface3); border: 1px solid var(--border2); border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; color: var(--text3); flex-shrink: 0; }
+.tab-btn.active .step-num { background: var(--accent); border-color: var(--accent); color: #000; }
+.main { max-width: 1060px; margin: 0 auto; padding: 28px 24px 72px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.callout { background: var(--surface2); border-left: 3px solid var(--accent3); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 16px; margin-bottom: 22px; font-size: 13px; color: var(--text2); line-height: 1.65; }
+.callout.warn { border-left-color: var(--yellow); }
+.callout.danger { border-left-color: var(--accent2); }
+.callout.generate { border-left-color: var(--accent); }
+.field { margin-bottom: 18px; }
+label.field-label { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--text2); text-transform: uppercase; margin-bottom: 7px; }
+textarea, input[type=text] { width: 100%; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: var(--font-body); font-size: 14px; line-height: 1.6; padding: 10px 13px; transition: border-color 0.15s; resize: vertical; }
+textarea:focus, input[type=text]:focus { outline: none; border-color: var(--accent); }
+textarea.script-input { min-height: 380px; font-family: var(--font-mono); font-size: 12.5px; }
+textarea.tall { min-height: 480px; }
+textarea.short { min-height: 140px; }
+textarea.brief-input { min-height: 180px; }
+.btn { background: var(--accent); border: none; border-radius: var(--radius); color: #06110a; cursor: pointer; font-family: var(--font-head); font-size: 16px; letter-spacing: 0.08em; padding: 11px 28px; transition: opacity 0.15s, transform 0.1s; }
+.btn:hover { opacity: 0.87; }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text2); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; padding: 7px 14px; border-radius: var(--radius); cursor: pointer; transition: all 0.12s; }
+.btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+.btn-row { display: flex; align-items: center; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.loading-bar { display: none; margin-top: 20px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 16px 18px; }
+.loading-bar.visible { display: block; }
+.loading-label { font-family: var(--font-mono); font-size: 11px; color: var(--text2); letter-spacing: 0.1em; margin-bottom: 10px; }
+.progress-track { height: 2px; background: var(--border2); border-radius: 1px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 1px; width: 0%; transition: width 0.3s ease; animation: pulse-fill 1.6s ease-in-out infinite; }
+@keyframes pulse-fill { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+.error-msg { background: #1a0f08; border: 1px solid var(--accent2); border-radius: var(--radius); color: #e0a060; font-family: var(--font-mono); font-size: 12px; margin-top: 16px; padding: 12px 16px; display: none; }
+.error-msg.visible { display: block; }
+.output-box { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); margin-top: 24px; display: none; }
+.output-box.visible { display: block; }
+.output-header { border-bottom: 1px solid var(--border); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.output-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--text2); text-transform: uppercase; }
+.output-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.output-content { padding: 20px; white-space: pre-wrap; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.75; color: var(--text); max-height: 720px; overflow-y: auto; }
+.output-content::-webkit-scrollbar { width: 4px; }
+.output-content::-webkit-scrollbar-track { background: transparent; }
+.output-content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+.audit-toggle { margin: 0; border-top: 1px solid var(--border); display: none; }
+.audit-header { padding: 10px 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--yellow); text-transform: uppercase; user-select: none; background: var(--surface3); transition: background 0.12s; }
+.audit-header:hover { background: var(--surface2); }
+.audit-arrow { transition: transform 0.2s; }
+.audit-header.open .audit-arrow { transform: rotate(180deg); }
+.audit-body { display: none; padding: 16px 20px; white-space: pre-wrap; font-family: var(--font-mono); font-size: 12px; line-height: 1.75; color: var(--text2); border-top: 1px solid var(--border); }
+.audit-body.open { display: block; }
+.brief-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+.brief-hint { font-family: var(--font-mono); font-size: 10px; color: var(--text3); margin-top: 5px; line-height: 1.5; }
+.source-links { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 22px; }
+.source-link { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text2); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; padding: 6px 12px; text-decoration: none; transition: all 0.12s; }
+.source-link:hover { border-color: var(--accent); color: var(--accent); }
+.section-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--text3); text-transform: uppercase; margin-bottom: 9px; }
+.verify-notes-block { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 18px; margin-top: 20px; }
+.verify-notes-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+.example-note { font-family: var(--font-mono); font-size: 11.5px; line-height: 1.7; margin-bottom: 10px; }
+@media (max-width: 640px) {
+  .brief-grid { grid-template-columns: 1fr; }
+  .tab-btn { padding: 12px 10px 10px; font-size: 10px; }
+  .main { padding: 20px 16px 60px; }
+}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo">THE BACKYARD <span>STEWARD</span></div>
+  <div class="header-rule"></div>
+  <div class="version-tag">SCRIPT STUDIO — V1</div>
+</header>
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="generate"><span class="step-num">1</span> Generate Script</button>
+  <button class="tab-btn" data-tab="extract"><span class="step-num">2</span> Extract Claims</button>
+  <button class="tab-btn" data-tab="verify"><span class="step-num">3</span> Verify &amp; Report</button>
+  <button class="tab-btn" data-tab="style"><span class="step-num">4</span> Style Pass</button>
+  <button class="tab-btn" data-tab="rewrite"><span class="step-num">5</span> Rewrite</button>
+</nav>
+<main class="main">
+
+  <!-- TAB 1 GENERATE -->
+  <div class="tab-panel active" id="tab-generate">
+    <div class="callout generate">
+      Enter your brief. Topic and angle are required — everything else is optional. This tool researches and writes a first draft calibrated to The Backyard Steward voice, built around one myth/correction and one or two concrete changes, with inline source citations. Target length is a working default (~1,200–1,600 words) — not yet confirmed against real published episodes. Read the script first, then expand the Script Audit before running it through the pipeline.
+    </div>
+    <div class="field">
+      <label class="field-label">Brief <span style="color:var(--accent2)">*</span></label>
+      <textarea class="brief-input" id="gen-brief" style="min-height:220px;" placeholder="Feeders vs. native plants&#10;&#10;The angle: most people think attracting birds means buying a feeder. That's backwards — feeders are a vending machine, native plants are the actual food web. Central question: why does a yard full of the right plants end up louder and more alive than a yard full of feeders?&#10;&#10;Must include: a native oak can support 500+ caterpillar species (a key food source for baby birds) while a non-native ornamental tree supports close to none. Must land on one or two concrete, easy changes — not a full yard overhaul.&#10;&#10;Avoid: guilt-tripping, plant encyclopedias, generic 'just add water' tips with no reasoning."></textarea>
+      <div class="brief-hint">Topic, angle, the myth being corrected, must-include facts, what to avoid — write it the way you'd explain it to a friend who just moved in.</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="btn-generate">GENERATE SCRIPT</button>
+      <button class="btn-ghost" id="btn-generate-clear">Clear</button>
+    </div>
+    <div class="loading-bar" id="generate-loading">
+      <div class="loading-label" id="generate-loading-label">Researching the story...</div>
+      <div class="progress-track"><div class="progress-fill" id="generate-progress"></div></div>
+    </div>
+    <div class="error-msg" id="generate-error"></div>
+    <div class="output-box" id="generate-output">
+      <div class="output-header">
+        <span class="output-title">Generated Script</span>
+        <div class="output-actions">
+          <button class="btn-ghost" id="btn-generate-copy-script">Copy Script</button>
+          <button class="btn-ghost" id="btn-generate-copy-all">Copy All</button>
+          <button class="btn-ghost" id="btn-generate-to-extract">Send to Extract &rarr;</button>
+        </div>
+      </div>
+      <div class="output-content" id="generate-script-result"></div>
+      <div class="audit-toggle" id="generate-audit-toggle">
+        <div class="audit-header" id="generate-audit-header">
+          <span>&#9888; Script Audit — expand before running pipeline</span>
+          <span class="audit-arrow">&#9660;</span>
+        </div>
+        <div class="audit-body" id="generate-audit-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2 EXTRACT -->
+  <div class="tab-panel" id="tab-extract">
+    <div class="callout warn">
+      Paste the first draft or send from Tab 1. Claims are extracted, classified by risk, and <strong>automatically searched against current sources up to today's date.</strong> Each claim comes back CONFIRMED, UNCONFIRMED, or POST-CUTOFF.
+    </div>
+    <div class="field">
+      <label class="field-label">First Draft Script <span style="color:var(--accent2)">*</span></label>
+      <textarea class="script-input tall" id="extract-script" placeholder="Paste the full script here, or send from Tab 1..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="btn-extract">EXTRACT &amp; VERIFY CLAIMS</button>
+      <button class="btn-ghost" id="btn-extract-clear">Clear</button>
+    </div>
+    <div class="loading-bar" id="extract-loading">
+      <div class="loading-label" id="extract-loading-label">Extracting and searching claims...</div>
+      <div class="progress-track"><div class="progress-fill" id="extract-progress"></div></div>
+    </div>
+    <div class="error-msg" id="extract-error"></div>
+    <div class="output-box" id="extract-output">
+      <div class="output-header">
+        <span class="output-title">Claim Extraction + Verification Report</span>
+        <div class="output-actions">
+          <button class="btn-ghost" id="btn-extract-copy">Copy</button>
+          <button class="btn-ghost" id="btn-extract-to-verify">Send to Verify &rarr;</button>
+        </div>
+      </div>
+      <div class="output-content" id="extract-result"></div>
+    </div>
+  </div>
+
+  <!-- TAB 3 VERIFY -->
+  <div class="tab-panel" id="tab-verify">
+    <div class="callout danger">
+      <strong>For claims Tab 2 couldn't confirm.</strong> CONFIRMED claims are already locked. Add your manual notes on UNCONFIRMED or POST-CUTOFF claims and generate the final report.
+    </div>
+    <div class="section-label">Primary Sources</div>
+    <div class="source-links">
+      <a href="https://www.allaboutbirds.org" target="_blank" class="source-link">&#8599; All About Birds (Cornell Lab)</a>
+      <a href="https://www.nwf.org" target="_blank" class="source-link">&#8599; National Wildlife Federation</a>
+      <a href="https://www.xerces.org" target="_blank" class="source-link">&#8599; Xerces Society</a>
+      <a href="https://plants.usda.gov" target="_blank" class="source-link">&#8599; USDA PLANTS Database</a>
+      <a href="https://nativeplantfinder.nwf.org" target="_blank" class="source-link">&#8599; Native Plant Finder</a>
+    </div>
+    <div class="field">
+      <label class="field-label">Claim List from Tab 2</label>
+      <textarea id="verify-claims" class="short" placeholder="Auto-filled from Tab 2, or paste the claim list here..."></textarea>
+    </div>
+    <div class="field">
+      <label class="field-label">Original Script</label>
+      <textarea id="verify-script" class="short" placeholder="Auto-filled from Tab 2, or paste the script here..."></textarea>
+    </div>
+    <div class="verify-notes-block">
+      <div class="verify-notes-title">Your Verification Notes</div>
+      <div class="example-note" style="color:var(--text3)">Format your notes like this — one claim per line:
+<span style="color:var(--green-light)">Claim #3 — CONFIRMED: Native oaks support 500+ caterpillar species. Source: nwf.org</span>
+<span style="color:#e0a060">Claim #7 — WRONG: It's 900+ species per Tallamy's research, not 500. Source: udel.edu</span>
+<span style="color:var(--yellow)">Claim #12 — COULDN'T CONFIRM: No source found for that regional claim</span></div>
+      <textarea id="verify-notes" style="min-height:200px" placeholder="Paste your source notes here..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="btn-verify">GENERATE VERIFICATION REPORT</button>
+      <button class="btn-ghost" id="btn-verify-clear">Clear Notes</button>
+    </div>
+    <div class="loading-bar" id="verify-loading">
+      <div class="loading-label" id="verify-loading-label">Building verification report...</div>
+      <div class="progress-track"><div class="progress-fill" id="verify-progress"></div></div>
+    </div>
+    <div class="error-msg" id="verify-error"></div>
+    <div class="output-box" id="verify-output">
+      <div class="output-header">
+        <span class="output-title">Verification Report — VERIFIED / FLAGGED / NEEDS CHECK</span>
+        <div class="output-actions">
+          <button class="btn-ghost" id="btn-verify-copy">Copy</button>
+          <button class="btn-ghost" id="btn-verify-to-style">Send to Style Pass &rarr;</button>
+        </div>
+      </div>
+      <div class="output-content" id="verify-result"></div>
+    </div>
+  </div>
+
+  <!-- TAB 4 STYLE -->
+  <div class="tab-panel" id="tab-style">
+    <div class="callout">
+      Full style analysis against The Backyard Steward voice. Banned-phrase audit, tone/expertise check, myth-first structure check, pacing for a half-listening mobile viewer, and outro assessment. Every flag gets a quote, a one-sentence diagnosis, and a concrete fix.
+    </div>
+    <div class="field">
+      <label class="field-label">Script to Style Pass <span style="color:var(--accent2)">*</span></label>
+      <textarea class="script-input tall" id="style-script" placeholder="Paste the script here — use the corrected version from Tab 3 if available..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="btn-style">RUN STYLE PASS</button>
+      <button class="btn-ghost" id="btn-style-clear">Clear</button>
+    </div>
+    <div class="loading-bar" id="style-loading">
+      <div class="loading-label" id="style-loading-label">Running style analysis...</div>
+      <div class="progress-track"><div class="progress-fill" id="style-progress"></div></div>
+    </div>
+    <div class="error-msg" id="style-error"></div>
+    <div class="output-box" id="style-output">
+      <div class="output-header">
+        <span class="output-title">Style Pass Report</span>
+        <div class="output-actions">
+          <button class="btn-ghost" id="btn-style-copy">Copy</button>
+          <button class="btn-ghost" id="btn-style-to-rewrite">Send to Rewrite &rarr;</button>
+        </div>
+      </div>
+      <div class="output-content" id="style-result"></div>
+    </div>
+  </div>
+
+  <!-- TAB 5 REWRITE -->
+  <div class="tab-panel" id="tab-rewrite">
+    <div class="callout">
+      Applies all style pass findings to produce a clean revised draft. Word counts both versions — flags if the rewrite drops more than 10% below the original. No kill list items survive.
+    </div>
+    <div class="field">
+      <label class="field-label">Original Script <span style="color:var(--accent2)">*</span></label>
+      <textarea class="script-input" id="rewrite-original" placeholder="Paste the script here..."></textarea>
+    </div>
+    <div class="field">
+      <label class="field-label">Style Pass Notes — from Tab 4</label>
+      <textarea id="rewrite-style-notes" class="short" placeholder="Auto-filled from Tab 4, or paste style pass output here..."></textarea>
+    </div>
+    <div class="field">
+      <label class="field-label">Verified &amp; Corrected Facts — from Tab 3 (optional)</label>
+      <textarea id="rewrite-verified-facts" style="min-height:100px" placeholder="Any confirmed corrections from the verification report..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="btn-rewrite">GENERATE REWRITE</button>
+      <button class="btn-ghost" id="btn-rewrite-clear">Clear</button>
+    </div>
+    <div class="loading-bar" id="rewrite-loading">
+      <div class="loading-label" id="rewrite-loading-label">Writing revised draft...</div>
+      <div class="progress-track"><div class="progress-fill" id="rewrite-progress"></div></div>
+    </div>
+    <div class="error-msg" id="rewrite-error"></div>
+    <div class="output-box" id="rewrite-output">
+      <div class="output-header">
+        <span class="output-title">Revised Script + Changes Log</span>
+        <div class="output-actions">
+          <button class="btn-ghost" id="btn-rewrite-copy">Copy Script Only</button>
+          <button class="btn-ghost" id="btn-rewrite-copy-all">Copy All</button>
+        </div>
+      </div>
+      <div class="output-content" id="rewrite-result"></div>
+    </div>
+  </div>
+
+</main>
+<script>
+const API_URL = "/api/claude";
+const MODEL = "claude-sonnet-4-6";
+
+const VOICE = `
+THE BACKYARD STEWARD VOICE RULES:
+Target viewer: "Maya" — newer homeowner, first yard of her life, curious about growing food and helping wildlife, not choosing between them. Environmentally conscious but not activist. Assume zero prior knowledge of native plants, ecology terms, or gardening jargon. Watches on her phone, often multitasking — she may be half-listening.
+Style:
+- Contractions always: didn't / it's / they're — never "did not / it is / they are." No exceptions.
+- Practical and conversational, not preachy or activist. No guilt-tripping, no "you should feel bad about your lawn" framing.
+- Warm and matter-of-fact, like a knowledgeable neighbor — not a lecture, not an infomercial.
+- Default framing: "You just got a yard — here's what's actually going on in it," not "here's what experts already know."
+- Front-load the point of each section in the first sentence — don't bury the payoff at the end of a long setup.
+- Food and wildlife blending is on-brand — referencing vegetable gardens, herbs, or beekeeping alongside wildlife content is expected, not scope creep.
+- Every video leaves the viewer with a concrete, easy change she can actually make — not an abstract principle, and not an overwhelming project list.
+- Myth-correction tone is gentle: "actually, that's a common myth — here's what's really happening." Never condescending, never "well, actually."
+- Family/legacy nods ("something the kids can see happen in the yard") are fine where relevant, never forced into every script.
+- Varied sentence starters — never open consecutive sentences with the same word.
+- Paragraph length varies deliberately.
+Structure: ACT 1 (Hook — do NOT resolve the myth), ACT 2 (Body — the correction and the resulting change), ACT 3 (Payoff, kept modest and specific), Outro.
+Hook must leave the viewer's curiosity alive at the end of the first paragraph.
+Outro ends on a specific physical image before any conceptual close. No fixed sign-off phrase has been set yet for this channel — end warmly and specifically instead of on a generic close; flag this as an open item for Graham to lock in a consistent line.
+KILL LIST — flag every instance, no exceptions:
+A. Banned phrases: "In today's video...", "Without further ado", "Let's dive in", "Little did I know", "Game changer", "It's important to note that", and any phrase that announces the video's structure instead of just starting ("In this video, I'm going to show you...")
+B. Tone / assumed-expertise violations (patterns, not exact phrases):
+   1. Jargon introduced without a plain-language definition on first use (e.g. "host plant," "keystone species," "straight species," "cultivar")
+   2. Certification/insider language aimed at the committed core, not Maya (e.g. "certified wildlife habitat," "Xerces Society guidelines," "native plant society chapter") — allowed only if immediately translated into plain terms
+   3. Guilt-based hooks implying the viewer is already failing by having a lawn
+   4. Framing that assumes a large-scale project (full yard overhaul) instead of one or two small changes
+C. Out of scope — do not generate or fact-check into:
+   1. Specific pesticide/herbicide brand recommendations or dosing
+   2. Anything that reads as certifying, rating, or officially endorsing on behalf of an organization (this channel isn't affiliated with any)
+   3. Medical/health claims about plants (edible safety, herbal remedy claims)
+D. General craft issues, same as any script:
+   1. Triads and comma-separated rhetorical lists — cut
+   2. Parallel fragment stacks: "No X. No Y. No Z." — rewrite as a single flowing sentence
+   3. Repeated sentence opener runs: 3+ consecutive sentences starting with the same word — rewrite to vary
+   4. AI transition phrases: "But here's the thing" / "Here's what most people don't know" / "And here's the kicker"
+   5. Hollow superlatives — back with specifics or cut
+   6. Rhetorical transition questions: "So what does that actually mean?"
+   7. Corporate filler: "at the end of the day" / "going forward" / "it cannot be overstated"
+   8. Missing contractions anywhere in the script
+`;
+
+const GENERATE_SYSTEM = VOICE + `
+
+You are the script writer for The Backyard Steward, a YouTube channel that helps everyday homeowners turn their yard into a habitat for birds, pollinators, and beneficial insects using native plants and simple, practical changes. Whether the viewer gardens for food, keeps bees, or just wants to know what's living in their yard, every script should offer science-based ways to help the whole yard thrive.
+
+No back-catalog of reference scripts exists yet for this channel. Calibrate against the voice rules above rather than named reference scripts — treat the first several generated scripts as building this channel's reference library going forward, and flag anything that felt off so it can be corrected before it becomes the pattern.
+
+BEFORE YOU WRITE — STORY JUDGMENT FIRST
+
+Do this before writing a single word of script:
+
+1. IDENTIFY THE DOCUMENTARY TYPE and its primary story engine. Most Backyard Steward episodes will be Practical Guide / How-To, but pick whichever actually fits the brief:
+   Rivalry — story engine is comparison + ideological conflict. Must answer: why do these two belong together? Weak rivalry scripts become dual biographies.
+   Athlete Life Story — story engine is identity conflict. Must emphasize emotional arc, personal conflict, turning points. Weak scripts become career recaps.
+   Team / Company — story engine is business pressure. Must emphasize market conditions, strategic decisions, inflection points, risk. Weak scripts become history recaps.
+   Race / Event History — story engine is evolution and escalation. Chronology matters but must show transformation and increasing stakes.
+   Concept / Debate — story engine is argument tension. Must have a strong thesis, logical escalation, and genuine counterarguments.
+   Practical Guide / How-To — story engine is myth correction leading to one or two small, concrete changes. Must answer: what does the viewer believe that's wrong, why does the correction matter, and what specific, easy change follows from it? Core Beat is the myth-debunk itself plus the resulting action — never compress. The revelation moment IS the myth-correction, usually just one, not spread across sections. Weak scripts in this format become either a checklist with no myth to organize around, or a guilt-driven lecture — both are failure modes to actively avoid. Do NOT build toward a full-project or systems-level payoff — the payoff is modest and specific (what starts to show up over a season), not a full-yard transformation.
+
+2. CLASSIFY ALL BEATS into three tiers:
+   Core Beats — major anchors. For Practical Guide: the myth-debunk and the resulting change(s). Must receive full buildup. Never compress.
+   Supporting Beats — these exist to earn Core Beats. For Practical Guide: the "why" reasoning (the science) that makes the correction credible and non-preachy. Do NOT cut supporting beats aggressively — cutting them cuts payoff weight.
+   Optional Beats — genuinely low narrative value. For Practical Guide: extra species trivia or tangents not tied directly to the action. These are the only beats to trim or cut.
+   Critical rule: over-compression is the primary failure mode. A Core Beat without sufficient setup feels unearned. Buildup is load-bearing, not filler.
+
+3. FIND THE REVELATION MOMENT — for Practical Guide episodes this is usually a single counterintuitive or myth-busting fact that reframes what the viewer thought they knew. Keep it consolidated, not scattered across the script.
+
+4. BUILD ESCALATION SEQUENTIALLY, NOT THEMATICALLY. For Practical Guide: hook (a specific moment/observation in a yard) → the common myth people believe about it → the science-based correction → the one or two concrete, easy changes that follow → payoff (what starts to show up over a season — modest and specific, not a full transformation).
+
+5. FACTS MUST EARN NARRATIVE VALUE. Every major factual detail must answer: why does this fact matter to the correction or the action? If a fact only informs without improving the story, cut or reduce it.
+
+SCRIPT STRUCTURE — follow every time:
+
+ACT 1 — HOOK (max 80 words)
+Open with a specific scene, image, or moment — not a concept. Establish the myth or misconception in a few short punches. End on a line that makes the viewer need to know what's actually true. Never resolve the myth in the hook.
+
+ACT 2 — BODY (majority of the script)
+Named sections with bold headers. Front-load the point of each section in its first sentence — this viewer may be half-listening. Lead with the correction, back it with the "why," land on the specific action. Short punch sentences for emphasis. Prefer evidence over explanation: specific species, specific numbers, specific consequences.
+
+ACT 3 — PAYOFF
+The pivot where the myth gets fully corrected and the action is stated plainly. Modest and specific — what changes in the yard over a season, not a full transformation.
+
+OUTRO
+A brief, warm close — 2 to 3 lines maximum. Ties back to something specific from the script. Encourages the viewer to try the one change and comment on what they notice. No motivational language, no guilt, no conceptual close.
+
+TARGET LENGTH: approximately 1,200–1,600 words excluding the sources section. This is a working default, not yet confirmed against a published episode — flag in the audit block if the brief seems to need more room than that.
+
+WORD COUNT — follow this process before delivering:
+Step 1: Write the full draft.
+Step 2: Count the words (excluding sources section).
+Step 3: If the count is below 1,100 words, do NOT deliver. Expand the Core Beat buildup (the myth-debunk reasoning), and recount.
+Step 4: Repeat until the draft is between 1,100 and 1,700 words.
+Step 5: Then deliver.
+
+SOURCING: Include a numbered SOURCES section at the bottom of the script. Do NOT include inline citation numbers in the script body. Sources list only at the bottom:
+[N] — Claim summary | Source name | URL if available | Confidence: CONFIRMED / NEEDS CHECK / POST-CUTOFF
+Sources section excluded from word count.
+
+RESEARCH: Use web search before writing. Find species behavior, habitat facts, and citation-worthy data on native vs. non-native plant impact. Primary sources: allaboutbirds.org (Cornell Lab), nwf.org (National Wildlife Federation), xerces.org, and state extension/wildlife agency sites. Note: cite these organizations as sources freely, but do not write the script itself in their insider language (see kill list B2) — the citation is fine, sounding like a member is not.
+
+After the full script and sources section, deliver an audit block in EXACTLY this format — no variation:
+
+---AUDIT START---
+CLAIMS TO VERIFY BEFORE RUNNING EXTRACT TAB
+[List every claim you are uncertain about — specific stats, regional claims, post-2025 events, superlative assertions]
+
+STORY DECISIONS GRAHAM CAN OVERRIDE
+[List narrative angle choices you made — what you included, left out, which beats you classified as Core vs Supporting vs Optional, and which documentary type you picked and why]
+
+VOICE CONFIDENCE NOTE
+Strong: [sections landing cleanly]
+Watch: [sections Graham should read carefully for tone, jargon, or story judgment]
+---AUDIT END---`;
+
+// Tab navigation
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector('[data-tab="' + id + '"]').classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+const LOADING_MSGS = ["Pulling the research...","Checking the work...","Running the numbers...","Building the report...","Almost there..."];
+
+async function stream(messages, systemPrompt, ids, onComplete) {
+  const { outputBox, outputContent, loadingBar, loadingLabel, progressFill, errorEl } = ids;
+  loadingBar.classList.add('visible');
+  errorEl.classList.remove('visible');
+  outputBox.classList.remove('visible');
+  let lIdx = 0;
+  const lInt = setInterval(() => { lIdx = (lIdx + 1) % LOADING_MSGS.length; loadingLabel.textContent = LOADING_MSGS[lIdx]; }, 2000);
+  let prog = 6;
+  const pInt = setInterval(() => { prog = Math.min(prog + Math.random() * 3.5, 87); progressFill.style.width = prog + '%'; }, 420);
+  try {
+    const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: MODEL, max_tokens: 12000, stream: true, system: systemPrompt, messages }) });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || 'API error ' + res.status); }
+    clearInterval(lInt); clearInterval(pInt);
+    progressFill.style.width = '100%';
+    loadingBar.classList.remove('visible');
+    outputBox.classList.add('visible');
+    outputContent.textContent = '';
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let full = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      for (const line of dec.decode(value).split('\n')) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        if (raw === '[DONE]') continue;
+        try { const p = JSON.parse(raw); if (p.type === 'content_block_delta' && p.delta?.text) { full += p.delta.text; outputContent.textContent = full; outputContent.scrollTop = outputContent.scrollHeight; } } catch(e) {}
+      }
+    }
+    if (onComplete) onComplete(full);
+    return full;
+  } catch (err) {
+    clearInterval(lInt); clearInterval(pInt);
+    loadingBar.classList.remove('visible');
+    errorEl.textContent = 'Error: ' + err.message;
+    errorEl.classList.add('visible');
+    return null;
+  }
+}
+
+function getIds(prefix) {
+  return {
+    outputBox: document.getElementById(prefix + '-output'),
+    outputContent: document.getElementById(prefix + '-result'),
+    loadingBar: document.getElementById(prefix + '-loading'),
+    loadingLabel: document.getElementById(prefix + '-loading-label'),
+    progressFill: document.getElementById(prefix + '-progress'),
+    errorEl: document.getElementById(prefix + '-error')
+  };
+}
+
+function copyBtn(btnId, getText) {
+  document.getElementById(btnId).addEventListener('click', () => {
+    const text = getText();
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    const btn = document.getElementById(btnId);
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+// ── TAB 1 GENERATE
+let savedGenerateScript = '';
+let savedGenerateAll = '';
+
+document.getElementById('btn-generate').addEventListener('click', async () => {
+  const briefInput = document.getElementById('gen-brief').value.trim();
+  if (!briefInput) { alert('Please enter a brief first.'); return; }
+  const TODAY = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const brief = 'BRIEF\n' + briefInput + '\n\nToday\'s date: ' + TODAY + '\n\nResearch the topic using web search before writing. Find accurate species facts, habitat guidance, and citation-worthy data on native vs. non-native plant impact. Include a numbered SOURCES section at the bottom — no inline citation numbers in the script body.\n\nWrite a complete script following the structure and voice rules. Deliver the full script, then the SOURCES section, then the AUDIT block.';
+  const btn = document.getElementById('btn-generate');
+  btn.disabled = true;
+  const loadingBar = document.getElementById('generate-loading');
+  const loadingLabel = document.getElementById('generate-loading-label');
+  const progressFill = document.getElementById('generate-progress');
+  const errorEl = document.getElementById('generate-error');
+  const outputBox = document.getElementById('generate-output');
+  const scriptResult = document.getElementById('generate-script-result');
+  const auditToggle = document.getElementById('generate-audit-toggle');
+  const auditHeader = document.getElementById('generate-audit-header');
+  const auditBody = document.getElementById('generate-audit-body');
+  loadingBar.classList.add('visible');
+  errorEl.classList.remove('visible');
+  outputBox.classList.remove('visible');
+  auditToggle.style.display = 'none';
+  const genMsgs = ["Researching the story...","Pulling species facts...","Finding the myth...","Writing the hook...","Building the body...","Checking sources...","Finishing the draft..."];
+  let lIdx = 0;
+  const lInt = setInterval(() => { lIdx = (lIdx + 1) % genMsgs.length; loadingLabel.textContent = genMsgs[lIdx]; }, 4000);
+  let prog = 4;
+  const pInt = setInterval(() => { prog = Math.min(prog + Math.random() * 1.8, 83); progressFill.style.width = prog + '%'; }, 700);
+  try {
+    const res = await fetch('/api/claude', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: MODEL, max_tokens: 12000, tools: [{ type: 'web_search_20250305', name: 'web_search' }], system: GENERATE_SYSTEM, messages: [{ role: 'user', content: brief }] }) });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || 'API error ' + res.status); }
+    const data = await res.json();
+    const full = data.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
+    clearInterval(lInt); clearInterval(pInt);
+    progressFill.style.width = '100%';
+    loadingBar.classList.remove('visible');
+    outputBox.classList.add('visible');
+    const auditStart = '---AUDIT START---';
+    const auditEnd = '---AUDIT END---';
+    const aIdx = full.indexOf(auditStart);
+    const eIdx = full.indexOf(auditEnd);
+    if (aIdx !== -1 && eIdx !== -1) {
+      const scriptPart = full.slice(0, aIdx).trim();
+      const auditPart = full.slice(aIdx + auditStart.length, eIdx).trim();
+      scriptResult.textContent = scriptPart;
+      auditBody.textContent = auditPart;
+      auditToggle.style.display = 'block';
+      savedGenerateScript = scriptPart;
+    } else {
+      scriptResult.textContent = full;
+      savedGenerateScript = full;
+    }
+    savedGenerateAll = full;
+  } catch (err) {
+    clearInterval(lInt); clearInterval(pInt);
+    loadingBar.classList.remove('visible');
+    errorEl.textContent = 'Error: ' + err.message;
+    errorEl.classList.add('visible');
+  }
+  btn.disabled = false;
+});
+
+document.getElementById('generate-audit-header').addEventListener('click', () => {
+  document.getElementById('generate-audit-header').classList.toggle('open');
+  document.getElementById('generate-audit-body').classList.toggle('open');
+});
+
+document.getElementById('btn-generate-clear').addEventListener('click', () => {
+  document.getElementById('gen-brief').value = '';
+  document.getElementById('generate-output').classList.remove('visible');
+  document.getElementById('generate-error').classList.remove('visible');
+  document.getElementById('generate-audit-toggle').style.display = 'none';
+  savedGenerateScript = ''; savedGenerateAll = '';
+});
+
+copyBtn('btn-generate-copy-script', () => {
+  if (!savedGenerateScript) return '';
+  const markers = ['SOURCES', '---AUDIT START---'];
+  let cutIdx = savedGenerateScript.length;
+  for (const m of markers) {
+    const idx = savedGenerateScript.indexOf(m);
+    if (idx !== -1 && idx < cutIdx) cutIdx = idx;
+  }
+  return savedGenerateScript.slice(0, cutIdx).trim();
+});
+copyBtn('btn-generate-copy-all', () => savedGenerateAll);
+document.getElementById('btn-generate-to-extract').addEventListener('click', () => {
+  document.getElementById('extract-script').value = savedGenerateScript;
+  switchTab('extract');
+});
+
+// ── TAB 2 EXTRACT
+let savedExtractScript = '';
+let savedExtractResult = '';
+
+document.getElementById('btn-extract').addEventListener('click', async () => {
+  const script = document.getElementById('extract-script').value.trim();
+  if (!script) { alert('Paste a script first.'); return; }
+  savedExtractScript = script;
+  const TODAY = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const sys = 'You are a fact-extraction and verification engine for The Backyard Steward, a backyard-wildlife and native-plant gardening YouTube channel. Today\'s date is ' + TODAY + '.\n\nYour job is two-stage:\nSTAGE 1 — Extract every specific verifiable claim from the script and classify by risk.\nSTAGE 2 — Use your web search tool to search for current sources and verify every HIGH RISK claim. Search up to today\'s date. Then verify MED RISK claims.\n\nCLAIM TYPES:\nHIGH RISK (search all): specific numbers, species counts, superlatives ("supports more species than any other," "first documented"), attributed research findings, specific regional claims.\nMED RISK (search these too): general habitat behavior, bloom/migration timing, organizational program details.\nLOW RISK (note only): general seasonal descriptions, broad ecological characterizations.\n\nVERIFICATION STATUS:\n- CONFIRMED ✓ — reliable source matches the claim. State source URL.\n- UNCONFIRMED ✗ — found conflicting information. State what you found.\n- NOT FOUND ⚠ — could not find source to confirm or deny. Manual check needed.\n- POST-CUTOFF — too recent for reliable sources. Manual check required.\n\nSEARCH APPROACH:\n- Search specifically: species/plant name + claim + region if given\n- Find direct URLs from: allaboutbirds.org, nwf.org, xerces.org, university extension sites, state wildlife agency sites\n- Mark NOT FOUND if you cannot confirm with a direct URL\n- Search current date sources — do not limit to pre-2025';
+  const prompt = 'STAGE 1: Extract every verifiable claim, classify by risk level.\nSTAGE 2: Search the web to verify every HIGH RISK and MED RISK claim. Use today\'s date (' + TODAY + ').\n\nProduce the report in this exact format:\n\nCLAIM EXTRACTION + VERIFICATION REPORT\n═══════════════════════════════════════\nDate verified: ' + TODAY + '\n[X claims total — X HIGH RISK / X MED RISK / X LOW RISK]\n[Verification summary: X CONFIRMED / X UNCONFIRMED / X NOT FOUND / X POST-CUTOFF]\n\nHIGH RISK CLAIMS — searched and verified\n───────────────────────────────────────\n#1 | [Exact quote from script]\n     Type: [claim type]\n     Status: CONFIRMED ✓ / UNCONFIRMED ✗ / NOT FOUND ⚠ / POST-CUTOFF\n     Finding: [what the search found — source URL or "could not confirm"]\n\n[All HIGH RISK claims]\n\nMED RISK CLAIMS — searched and verified\n───────────────────────────────────────\n[Same format]\n\nLOW RISK CLAIMS — not searched, note only\n───────────────────────────────────────\n#N | [Claim] | [why low risk]\n\nREQUIRES MANUAL CHECK BEFORE VOICEOVER\n───────────────────────────────────────\n[List all UNCONFIRMED, NOT FOUND, and POST-CUTOFF claims with one sentence on what to check and where]\n\nSCRIPT:\n' + script;
+  const btn = document.getElementById('btn-extract');
+  btn.disabled = true;
+  const loadingBar = document.getElementById('extract-loading');
+  const loadingLabel = document.getElementById('extract-loading-label');
+  const progressFill = document.getElementById('extract-progress');
+  const errorEl = document.getElementById('extract-error');
+  const outputBox = document.getElementById('extract-output');
+  const outputContent = document.getElementById('extract-result');
+  loadingBar.classList.add('visible'); errorEl.classList.remove('visible'); outputBox.classList.remove('visible');
+  const searchMsgs = ["Extracting claims...","Searching species data...","Checking habitat facts...","Verifying regional claims...","Cross-referencing sources...","Building verification report..."];
+  let lIdx = 0;
+  const lInt = setInterval(() => { lIdx = (lIdx + 1) % searchMsgs.length; loadingLabel.textContent = searchMsgs[lIdx]; }, 3000);
+  let prog = 5;
+  const pInt = setInterval(() => { prog = Math.min(prog + Math.random() * 2, 85); progressFill.style.width = prog + '%'; }, 600);
+  try {
+    const res = await fetch('/api/claude', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: MODEL, max_tokens: 12000, tools: [{ type: 'web_search_20250305', name: 'web_search' }], system: sys, messages: [{ role: 'user', content: prompt }] }) });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || 'API error ' + res.status); }
+    const data = await res.json();
+    const textBlocks = data.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
+    clearInterval(lInt); clearInterval(pInt);
+    progressFill.style.width = '100%'; loadingBar.classList.remove('visible'); outputBox.classList.add('visible');
+    outputContent.textContent = textBlocks; savedExtractResult = textBlocks;
+  } catch (err) {
+    clearInterval(lInt); clearInterval(pInt);
+    loadingBar.classList.remove('visible');
+    errorEl.textContent = 'Error: ' + err.message; errorEl.classList.add('visible');
+  }
+  btn.disabled = false;
+});
+
+document.getElementById('btn-extract-clear').addEventListener('click', () => {
+  document.getElementById('extract-script').value = '';
+  document.getElementById('extract-output').classList.remove('visible');
+  document.getElementById('extract-error').classList.remove('visible');
+});
+copyBtn('btn-extract-copy', () => savedExtractResult);
+document.getElementById('btn-extract-to-verify').addEventListener('click', () => {
+  document.getElementById('verify-claims').value = savedExtractResult;
+  document.getElementById('verify-script').value = savedExtractScript;
+
+  const lines = savedExtractResult.split('\n');
+  const noteLines = [];
+  let currentClaim = '';
+  let currentNum = '';
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const claimMatch = line.match(/^#(\d+)\s*\|(.+)/);
+    if (claimMatch) {
+      currentNum = claimMatch[1];
+      currentClaim = claimMatch[2].trim().replace(/^["']|["']$/g, '').trim();
+    }
+    if (/^Status:/i.test(line)) {
+      const upper = line.toUpperCase();
+      if (upper.includes('NOT FOUND') || upper.includes('UNCONFIRMED') || upper.includes('POST-CUTOFF')) {
+        const status = upper.includes('NOT FOUND') ? 'NOT FOUND'
+                     : upper.includes('UNCONFIRMED') ? 'UNCONFIRMED'
+                     : 'POST-CUTOFF';
+        let finding = '';
+        for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+          if (/^Finding:/i.test(lines[j].trim())) {
+            finding = lines[j].trim().replace(/^Finding:\s*/i, '').trim();
+            break;
+          }
+        }
+        if (currentNum && currentClaim) {
+          noteLines.push(
+            'Claim #' + currentNum + ' — ' + status + '\n' +
+            '   Claim: "' + currentClaim + '"\n' +
+            '   Tab 2 found: ' + (finding || 'No source located') + '\n' +
+            '   Your check: [update this line — e.g. CONFIRMED: [what] Source: [URL] — or leave as-is to tag ⚠ UNVERIFIED]\n'
+          );
+        }
+      }
+    }
+  }
+
+  const manualMarker = 'REQUIRES MANUAL CHECK BEFORE VOICEOVER';
+  const manualIdx = savedExtractResult.indexOf(manualMarker);
+  if (manualIdx !== -1 && noteLines.length === 0) {
+    const manualLines = savedExtractResult.slice(manualIdx + manualMarker.length).trim().split('\n').filter(l => l.trim().startsWith('•') || l.trim().startsWith('-'));
+    manualLines.forEach(l => noteLines.push(l.trim().replace(/^[•\-]\s*/, '') + '\n'));
+  }
+
+  document.getElementById('verify-notes').value = noteLines.length > 0
+    ? '⚠ ACTION REQUIRED — ' + noteLines.length + ' claim' + (noteLines.length > 1 ? 's' : '') + ' need' + (noteLines.length === 1 ? 's' : '') + ' your review\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+      'For each claim: update the "Your check" line with what you found.\n' +
+      'If you can\'t confirm it, leave as-is — it will be tagged ⚠ UNVERIFIED in the final script.\n\n' +
+      noteLines.join('\n')
+    : '✅ NO ACTION REQUIRED — Tab 2 confirmed all claims\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+      'All claims were confirmed by web search in Tab 2.\n' +
+      'Hit GENERATE VERIFICATION REPORT to proceed to Style Pass.';
+
+  switchTab('verify');
+});
+
+// ── TAB 3 VERIFY
+let savedVerifyReport = '';
+let savedVerifyScript = '';
+
+document.getElementById('btn-verify').addEventListener('click', async () => {
+  const claims = document.getElementById('verify-claims').value.trim();
+  const notes = document.getElementById('verify-notes').value.trim();
+  const script = document.getElementById('verify-script').value.trim();
+  if (!claims) { alert('Add the claim list from Tab 2 first.'); return; }
+  if (!notes) { alert('Add your source notes before generating the report.'); return; }
+  savedVerifyScript = script;
+  const sys = 'You are a verification report engine for a backyard wildlife and native-plant gardening YouTube channel.\nCRITICAL: Apply the human researcher\'s source notes to produce the report. Do NOT use your own training data to confirm, deny, or adjust any claim. If the human did not check a claim, it stays in REQUIRES YOUR REVIEW. You do not fill gaps.\nWhen the human\'s notes include a URL, reproduce that exact URL in the Source field.';
+  const prompt = 'Apply my verification notes to this claim list. Use ONLY my notes.\n\nCLAIM LIST:\n' + claims + '\n\nMY NOTES:\n' + notes + '\n\nProduce the report in this exact format:\n\nVERIFICATION REPORT\n═══════════════════════════════════════\nSUMMARY: Confirmed: X | Auto-Corrected: X | Needs Your Review: X | Total: X\n\nACTION REQUIRED: [X claims need your review before voiceover]\nNO ACTION NEEDED: [X claims confirmed or auto-corrected]\n\n✅ CONFIRMED — NO ACTION NEEDED\n───────────────────────────────────────\n#N | [Claim] | Confirmed as: [what the source says] | Source: [exact URL]\n\n🔧 AUTO-CORRECTED BY TOOL — NO ACTION NEEDED\n───────────────────────────────────────\n#N | [Original claim] | Problem: [what was wrong] | Corrected to: [what it should say] | Source: [exact URL]\n\n⚠ REQUIRES YOUR REVIEW BEFORE VOICEOVER\n───────────────────────────────────────\n#N | [Claim] | Why it needs checking: [one sentence] | Where to check: [specific source]\n\nTAGGING INSTRUCTIONS FOR REWRITE:\n- CORRECTED: [exact quote from script] → replace with: [corrected text] [CORRECTED]\n- UNVERIFIED: [exact quote from script] → add [⚠ UNVERIFIED] after this text\n- CONFIRMED claims need no tags';
+  const btn = document.getElementById('btn-verify');
+  btn.disabled = true;
+  await stream([{ role: 'user', content: prompt }], sys, getIds('verify'), text => { savedVerifyReport = text; });
+  btn.disabled = false;
+});
+
+document.getElementById('btn-verify-clear').addEventListener('click', () => {
+  document.getElementById('verify-notes').value = '';
+  document.getElementById('verify-output').classList.remove('visible');
+  document.getElementById('verify-error').classList.remove('visible');
+});
+copyBtn('btn-verify-copy', () => savedVerifyReport);
+document.getElementById('btn-verify-to-style').addEventListener('click', () => {
+  document.getElementById('style-script').value = savedVerifyScript;
+  switchTab('style');
+});
+
+// ── TAB 4 STYLE
+let savedStyleReport = '';
+let savedStyleScript = '';
+
+document.getElementById('btn-style').addEventListener('click', async () => {
+  const script = document.getElementById('style-script').value.trim();
+  if (!script) { alert('Paste a script first.'); return; }
+  savedStyleScript = script;
+  const sys = VOICE + '\nYou are a script editor for The Backyard Steward. Run a full style pass. Be direct and specific — quote the offending text, name the problem in one sentence, give a concrete fix. Do not pad the report.';
+  const prompt = 'Run a full style pass on this script. Produce the report in this exact structure:\n\nSTYLE PASS REPORT\n═══════════════════════════════════════\n\nSCORE: [X/10]\n\nOVERVIEW\n[3-4 sentences max — honest strengths and core weaknesses]\n\n───────────────────────────────────────\nHOOK TENSION\n───────────────────────────────────────\nResolves the myth too early: [Yes / No]\n[One paragraph — is the viewer\'s curiosity still alive at end of first paragraph?]\nFix: [specific suggestion if needed, or "None required"]\n\n───────────────────────────────────────\nKILL LIST AUDIT\n───────────────────────────────────────\nCheck every one of these four categories from the voice rules (A: banned phrases, B: tone/expertise violations, C: out-of-scope topics, D: general craft issues). For each violation: quote it, diagnose it, fix it. For clean categories, note them as clean.\n\nCATEGORY: [letter and name]\nQUOTE: "[exact text from script]"\nPROBLEM: [one sentence]\nFIX: [concrete rewrite]\n\n───────────────────────────────────────\nTONE TEST — would Maya (a newer homeowner with no gardening background) feel talked down to, bored, or lectured?\n───────────────────────────────────────\n[Quote it, name the problem, fix it. If nothing: "Tone test: passes ✓"]\n\n───────────────────────────────────────\nPACING & FRONT-LOADING\n───────────────────────────────────────\n[Does each section lead with its point in the first sentence, for a half-listening mobile viewer? Flag any section that buries the payoff]\n\n───────────────────────────────────────\nACTIONABILITY CHECK\n───────────────────────────────────────\n[Does the script land on one or two concrete, doable actions — not a list of ten things or an abstract principle? Flag if it does]\n\n───────────────────────────────────────\nOUTRO\n───────────────────────────────────────\n[Quote the ending. Does it land on a specific physical image before the conceptual close? Verdict and fix if needed.]\n\n───────────────────────────────────────\nPRIORITY FIXES\n───────────────────────────────────────\n1. [Most important]\n2.\n3.\n4.\n5.\n\nScript:\n' + script;
+  const btn = document.getElementById('btn-style');
+  btn.disabled = true;
+  await stream([{ role: 'user', content: prompt }], sys, getIds('style'), text => { savedStyleReport = text; });
+  btn.disabled = false;
+});
+
+document.getElementById('btn-style-clear').addEventListener('click', () => {
+  document.getElementById('style-script').value = '';
+  document.getElementById('style-output').classList.remove('visible');
+  document.getElementById('style-error').classList.remove('visible');
+});
+copyBtn('btn-style-copy', () => savedStyleReport);
+document.getElementById('btn-style-to-rewrite').addEventListener('click', () => {
+  document.getElementById('rewrite-original').value = savedStyleScript;
+  document.getElementById('rewrite-style-notes').value = savedStyleReport;
+  if (savedVerifyReport) {
+    const tagIdx = savedVerifyReport.indexOf('TAGGING INSTRUCTIONS FOR REWRITE');
+    if (tagIdx !== -1) document.getElementById('rewrite-verified-facts').value = savedVerifyReport.slice(tagIdx).trim();
+  }
+  switchTab('rewrite');
+});
+
+// ── TAB 5 REWRITE
+let savedRewriteResult = '';
+function countWords(t) { return t.trim().split(/\s+/).filter(w => w.length > 0).length; }
+
+document.getElementById('btn-rewrite').addEventListener('click', async () => {
+  const original = document.getElementById('rewrite-original').value.trim();
+  const styleNotes = document.getElementById('rewrite-style-notes').value.trim();
+  const verifiedFacts = document.getElementById('rewrite-verified-facts').value.trim();
+  if (!original) { alert('Paste the original script first.'); return; }
+  const origWC = countWords(original);
+  const sys = VOICE + '\nYou are rewriting a The Backyard Steward script applying all style pass recommendations.\nThe rewrite MUST pass the full kill list — no banned phrases, no guilt-based framing, no unexplained jargon, no formal constructions where a contraction belongs, no full-yard-overhaul scope creep.\nWord count target: within 10% of the original (' + origWC + ' words). Hard floor: never deliver fewer than ' + Math.round(origWC * 0.90) + ' words.\nIf cuts from the kill list and style pass bring you below that floor, restore length by expanding existing sections with more specific detail — do not add new sections or pad with filler. Length reductions from cutting repetition are correct. Cuts that remove whole subject areas are a structural problem — flag them and restore the content.\n\nTAGGING RULES:\n- Any claim listed as UNVERIFIED: add [⚠ UNVERIFIED] immediately after that text\n- Any claim with a correction: apply the correction and add [CORRECTED] immediately after\n- Confirmed claims: reproduce without any tag\n- Never strip or add tags beyond what the tagging instructions specify\n\nINTEGRITY CHECK — before delivering:\n- Read every sentence. Any sentence that ends abruptly, trails off, or is missing its predicate must be completed using context from surrounding paragraphs.\n- Every section that appears in the original must appear in the rewrite. No section may be dropped or truncated.\n- The final script must be complete and ready for voiceover. No placeholders, no incomplete sentences, no missing sections.';
+  const prompt = 'Rewrite this script applying all style pass notes.\n\nORIGINAL (' + origWC + ' words):\n' + original + '\n\nSTYLE PASS NOTES:\n' + (styleNotes || 'Apply full kill list and voice rules.') + '\n\n' + (verifiedFacts ? 'VERIFICATION TAGGING INSTRUCTIONS:\n' + verifiedFacts : '') + '\n\nDeliver in this format:\n\nREWRITE\n═══════════════════════════════════════\nWORD COUNT — Original: ' + origWC + ' | Revised: [X] | Change: [±X words / X%]\n[If more than 10% shorter: ⚠ FLAG — rewrite is below the word count floor. List sections where length was restored or still needs restoration]\n\nCHANGES MADE\n───────────────────────────────────────\nStructural: [list]\nStyle / Kill List: [list what was fixed or cut]\nFactual: [list tags applied, or "None"]\nIntegrity fixes: [list any truncated sentences completed, or "None found"]\n\n───────────────────────────────────────\nREVISED SCRIPT\n───────────────────────────────────────\n[Full revised script — complete, every section present, all tags applied. Ready for voiceover.]';
+  const btn = document.getElementById('btn-rewrite');
+  btn.disabled = true;
+  await stream([{ role: 'user', content: prompt }], sys, getIds('rewrite'), text => { savedRewriteResult = text; });
+  btn.disabled = false;
+});
+
+document.getElementById('btn-rewrite-clear').addEventListener('click', () => {
+  document.getElementById('rewrite-original').value = '';
+  document.getElementById('rewrite-style-notes').value = '';
+  document.getElementById('rewrite-verified-facts').value = '';
+  document.getElementById('rewrite-output').classList.remove('visible');
+  document.getElementById('rewrite-error').classList.remove('visible');
+});
+copyBtn('btn-rewrite-copy', () => {
+  const marker = 'REVISED SCRIPT';
+  const idx = savedRewriteResult.indexOf(marker);
+  return idx !== -1 ? savedRewriteResult.slice(idx + marker.length).replace(/^[\s\-═─]+/, '').trim() : savedRewriteResult;
+});
+copyBtn('btn-rewrite-copy-all', () => savedRewriteResult);
+</script>
+</body>
+</html>
