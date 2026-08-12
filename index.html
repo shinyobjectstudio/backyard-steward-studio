@@ -94,7 +94,7 @@ textarea.brief-input { min-height: 180px; }
 <header class="header">
   <div class="logo">THE BACKYARD <span>STEWARD</span></div>
   <div class="header-rule"></div>
-  <div class="version-tag">SCRIPT STUDIO — V1</div>
+  <div class="version-tag">SCRIPT STUDIO — V1.1</div>
 </header>
 <nav class="tab-nav">
   <button class="tab-btn active" data-tab="generate"><span class="step-num">1</span> Generate Script</button>
@@ -396,6 +396,8 @@ Sources section excluded from word count.
 
 RESEARCH: Use web search before writing. Find species behavior, habitat facts, and citation-worthy data on native vs. non-native plant impact. Primary sources: allaboutbirds.org (Cornell Lab), nwf.org (National Wildlife Federation), xerces.org, and state extension/wildlife agency sites. Note: cite these organizations as sources freely, but do not write the script itself in their insider language (see kill list B2) — the citation is fine, sounding like a member is not.
 
+IMPORTANT — OUTPUT FORMATTING FOR DOWNSTREAM PARSING: When producing the numbered claim list, sources list, or any structured report elsewhere in this pipeline, do NOT wrap claim headers or list items in markdown bold (no "**"). Plain text only for structural markers like "#1 |" or "Finding:" — bold formatting breaks the tool's automated parsing between tabs.
+
 After the full script and sources section, deliver an audit block in EXACTLY this format — no variation:
 
 ---AUDIT START---
@@ -595,8 +597,8 @@ document.getElementById('btn-extract').addEventListener('click', async () => {
   if (!script) { alert('Paste a script first.'); return; }
   savedExtractScript = script;
   const TODAY = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  const sys = 'You are a fact-extraction and verification engine for The Backyard Steward, a backyard-wildlife and native-plant gardening YouTube channel. Today\'s date is ' + TODAY + '.\n\nYour job is two-stage:\nSTAGE 1 — Extract every specific verifiable claim from the script and classify by risk.\nSTAGE 2 — Use your web search tool to search for current sources and verify every HIGH RISK claim. Search up to today\'s date. Then verify MED RISK claims.\n\nCLAIM TYPES:\nHIGH RISK (search all): specific numbers, species counts, superlatives ("supports more species than any other," "first documented"), attributed research findings, specific regional claims.\nMED RISK (search these too): general habitat behavior, bloom/migration timing, organizational program details.\nLOW RISK (note only): general seasonal descriptions, broad ecological characterizations.\n\nVERIFICATION STATUS:\n- CONFIRMED ✓ — reliable source matches the claim. State source URL.\n- UNCONFIRMED ✗ — found conflicting information. State what you found.\n- NOT FOUND ⚠ — could not find source to confirm or deny. Manual check needed.\n- POST-CUTOFF — too recent for reliable sources. Manual check required.\n\nSEARCH APPROACH:\n- Search specifically: species/plant name + claim + region if given\n- Find direct URLs from: allaboutbirds.org, nwf.org, xerces.org, university extension sites, state wildlife agency sites\n- Mark NOT FOUND if you cannot confirm with a direct URL\n- Search current date sources — do not limit to pre-2025';
-  const prompt = 'STAGE 1: Extract every verifiable claim, classify by risk level.\nSTAGE 2: Search the web to verify every HIGH RISK and MED RISK claim. Use today\'s date (' + TODAY + ').\n\nProduce the report in this exact format:\n\nCLAIM EXTRACTION + VERIFICATION REPORT\n═══════════════════════════════════════\nDate verified: ' + TODAY + '\n[X claims total — X HIGH RISK / X MED RISK / X LOW RISK]\n[Verification summary: X CONFIRMED / X UNCONFIRMED / X NOT FOUND / X POST-CUTOFF]\n\nHIGH RISK CLAIMS — searched and verified\n───────────────────────────────────────\n#1 | [Exact quote from script]\n     Type: [claim type]\n     Status: CONFIRMED ✓ / UNCONFIRMED ✗ / NOT FOUND ⚠ / POST-CUTOFF\n     Finding: [what the search found — source URL or "could not confirm"]\n\n[All HIGH RISK claims]\n\nMED RISK CLAIMS — searched and verified\n───────────────────────────────────────\n[Same format]\n\nLOW RISK CLAIMS — not searched, note only\n───────────────────────────────────────\n#N | [Claim] | [why low risk]\n\nREQUIRES MANUAL CHECK BEFORE VOICEOVER\n───────────────────────────────────────\n[List all UNCONFIRMED, NOT FOUND, and POST-CUTOFF claims with one sentence on what to check and where]\n\nSCRIPT:\n' + script;
+  const sys = 'You are a fact-extraction and verification engine for The Backyard Steward, a backyard-wildlife and native-plant gardening YouTube channel. Today\'s date is ' + TODAY + '.\n\nYour job is two-stage:\nSTAGE 1 — Extract every specific verifiable claim from the script and classify by risk.\nSTAGE 2 — Use your web search tool to search for current sources and verify every HIGH RISK claim. Search up to today\'s date. Then verify MED RISK claims.\n\nCLAIM TYPES:\nHIGH RISK (search all): specific numbers, species counts, superlatives ("supports more species than any other," "first documented"), attributed research findings, specific regional claims.\nMED RISK (search these too): general habitat behavior, bloom/migration timing, organizational program details.\nLOW RISK (note only): general seasonal descriptions, broad ecological characterizations.\n\nVERIFICATION STATUS:\n- CONFIRMED ✓ — reliable source matches the claim. State source URL.\n- UNCONFIRMED ✗ — found conflicting information. State what you found.\n- NOT FOUND ⚠ — could not find source to confirm or deny. Manual check needed.\n- POST-CUTOFF — too recent for reliable sources. Manual check required.\n\nSEARCH APPROACH:\n- Search specifically: species/plant name + claim + region if given\n- Find direct URLs from: allaboutbirds.org, nwf.org, xerces.org, university extension sites, state wildlife agency sites\n- Mark NOT FOUND if you cannot confirm with a direct URL\n- Search current date sources — do not limit to pre-2025\n\nCRITICAL OUTPUT RULE: Plain text only. Do NOT wrap claim numbers, headers, or labels (like "#1 |" or "Status:" or "Finding:") in markdown bold ("**") or any other markdown formatting — this report is parsed automatically between tool tabs, and bold markers break that parsing. Write claim text and finding explanations as plain prose paragraphs, not bulleted sub-lists, so the finding text stays on contiguous lines the parser can capture as one block.';
+  const prompt = 'STAGE 1: Extract every verifiable claim, classify by risk level.\nSTAGE 2: Search the web to verify every HIGH RISK and MED RISK claim. Use today\'s date (' + TODAY + ').\n\nProduce the report in this exact format — plain text, no markdown bold anywhere in claim headers or labels:\n\nCLAIM EXTRACTION + VERIFICATION REPORT\n═══════════════════════════════════════\nDate verified: ' + TODAY + '\n[X claims total — X HIGH RISK / X MED RISK / X LOW RISK]\n[Verification summary: X CONFIRMED / X UNCONFIRMED / X NOT FOUND / X POST-CUTOFF]\n\nHIGH RISK CLAIMS — searched and verified\n───────────────────────────────────────\n#1 | [Exact quote from script]\nType: [claim type]\nStatus: CONFIRMED ✓ / UNCONFIRMED ✗ / NOT FOUND ⚠ / POST-CUTOFF\nFinding: [what the search found — source URL or "could not confirm" — write this as one contiguous paragraph, no line breaks in the middle of it]\n\n[All HIGH RISK claims, same format, blank line between claims]\n\nMED RISK CLAIMS — searched and verified\n───────────────────────────────────────\n[Same format]\n\nLOW RISK CLAIMS — not searched, note only\n───────────────────────────────────────\n#N | [Claim] | [why low risk]\n\nREQUIRES MANUAL CHECK BEFORE VOICEOVER\n───────────────────────────────────────\n[List all UNCONFIRMED, NOT FOUND, and POST-CUTOFF claims with one sentence on what to check and where]\n\nSCRIPT:\n' + script;
   const btn = document.getElementById('btn-extract');
   btn.disabled = true;
   const loadingBar = document.getElementById('extract-loading');
@@ -633,51 +635,85 @@ document.getElementById('btn-extract-clear').addEventListener('click', () => {
   document.getElementById('extract-error').classList.remove('visible');
 });
 copyBtn('btn-extract-copy', () => savedExtractResult);
+
+// Tab 2 → Tab 3 handoff. Rebuilt to be tolerant of real model output drift:
+// (1) strips markdown bold before parsing, since the model sometimes wraps
+//     "#N | claim" headers in ** even when told not to, and (2) captures the
+//     FULL finding block (every line until the next claim or section header)
+//     instead of a single "Finding:" line, since real findings routinely run
+//     several lines (quotes, source URLs, caveats).
 document.getElementById('btn-extract-to-verify').addEventListener('click', () => {
   document.getElementById('verify-claims').value = savedExtractResult;
   document.getElementById('verify-script').value = savedExtractScript;
 
-  const lines = savedExtractResult.split('\n');
+  const cleaned = savedExtractResult.replace(/\*\*/g, '');
+  const lines = cleaned.split('\n');
   const noteLines = [];
-  let currentClaim = '';
+
   let currentNum = '';
+  let currentClaim = '';
+  let pendingStatus = '';
+  let capturing = false;
+  let findingLines = [];
+
+  function flush() {
+    if (currentNum && currentClaim && pendingStatus) {
+      const finding = findingLines.join(' ').replace(/\s+/g, ' ').trim();
+      noteLines.push(
+        'Claim #' + currentNum + ' — ' + pendingStatus + '\n' +
+        '   Claim: "' + currentClaim + '"\n' +
+        '   Tab 2 found: ' + (finding || 'No source located') + '\n' +
+        '   Your check: [update this line — e.g. CONFIRMED: [what] Source: [URL] — or leave as-is to tag ⚠ UNVERIFIED]\n'
+      );
+    }
+    currentNum = ''; currentClaim = ''; pendingStatus = ''; findingLines = []; capturing = false;
+  }
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+    const raw = lines[i];
+    const line = raw.trim();
+
     const claimMatch = line.match(/^#(\d+)\s*\|(.+)/);
     if (claimMatch) {
+      flush();
       currentNum = claimMatch[1];
       currentClaim = claimMatch[2].trim().replace(/^["']|["']$/g, '').trim();
+      continue;
     }
+
     if (/^Status:/i.test(line)) {
       const upper = line.toUpperCase();
       if (upper.includes('NOT FOUND') || upper.includes('UNCONFIRMED') || upper.includes('POST-CUTOFF')) {
-        const status = upper.includes('NOT FOUND') ? 'NOT FOUND'
-                     : upper.includes('UNCONFIRMED') ? 'UNCONFIRMED'
-                     : 'POST-CUTOFF';
-        let finding = '';
-        for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
-          if (/^Finding:/i.test(lines[j].trim())) {
-            finding = lines[j].trim().replace(/^Finding:\s*/i, '').trim();
-            break;
-          }
-        }
-        if (currentNum && currentClaim) {
-          noteLines.push(
-            'Claim #' + currentNum + ' — ' + status + '\n' +
-            '   Claim: "' + currentClaim + '"\n' +
-            '   Tab 2 found: ' + (finding || 'No source located') + '\n' +
-            '   Your check: [update this line — e.g. CONFIRMED: [what] Source: [URL] — or leave as-is to tag ⚠ UNVERIFIED]\n'
-          );
-        }
+        pendingStatus = upper.includes('NOT FOUND') ? 'NOT FOUND'
+                       : upper.includes('UNCONFIRMED') ? 'UNCONFIRMED'
+                       : 'POST-CUTOFF';
+        capturing = true;
+        findingLines = [];
+      } else {
+        pendingStatus = '';
+        capturing = false;
       }
+      continue;
+    }
+
+    if (capturing) {
+      // Stop capturing at the next section header or divider line.
+      if (/^(MED RISK|LOW RISK|HIGH RISK|REQUIRES MANUAL CHECK)/i.test(line) || /^[─═-]{3,}$/.test(line) || line === '') {
+        if (line === '' && findingLines.length === 0) continue; // tolerate a blank line right after "Finding:"
+        if (line === '') { capturing = false; continue; }
+        capturing = false;
+        continue;
+      }
+      findingLines.push(line.replace(/^Finding:\s*/i, '').replace(/^Type:.*/i, '').trim());
+      findingLines = findingLines.filter(Boolean);
     }
   }
+  flush();
 
   const manualMarker = 'REQUIRES MANUAL CHECK BEFORE VOICEOVER';
-  const manualIdx = savedExtractResult.indexOf(manualMarker);
+  const manualIdx = cleaned.indexOf(manualMarker);
   if (manualIdx !== -1 && noteLines.length === 0) {
-    const manualLines = savedExtractResult.slice(manualIdx + manualMarker.length).trim().split('\n').filter(l => l.trim().startsWith('•') || l.trim().startsWith('-'));
+    const manualLines = cleaned.slice(manualIdx + manualMarker.length).trim().split('\n').filter(l => l.trim().length > 0 && !/^[─═-]{3,}$/.test(l.trim()));
     manualLines.forEach(l => noteLines.push(l.trim().replace(/^[•\-]\s*/, '') + '\n'));
   }
 
