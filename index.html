@@ -94,7 +94,7 @@ textarea.brief-input { min-height: 180px; }
 <header class="header">
   <div class="logo">THE BACKYARD <span>STEWARD</span></div>
   <div class="header-rule"></div>
-  <div class="version-tag">SCRIPT STUDIO — V1.1</div>
+  <div class="version-tag">SCRIPT STUDIO — V1.2</div>
 </header>
 <nav class="tab-nav">
   <button class="tab-btn active" data-tab="generate"><span class="step-num">1</span> Generate Script</button>
@@ -108,7 +108,7 @@ textarea.brief-input { min-height: 180px; }
   <!-- TAB 1 GENERATE -->
   <div class="tab-panel active" id="tab-generate">
     <div class="callout generate">
-      Enter your brief. Topic and angle are required — everything else is optional. This tool researches and writes a first draft calibrated to The Backyard Steward voice, built around one myth/correction and one or two concrete changes, with inline source citations. Target length is a working default (~1,200–1,600 words) — not yet confirmed against real published episodes. Read the script first, then expand the Script Audit before running it through the pipeline.
+      Enter your brief. Topic and angle are required — everything else is optional. This tool researches and writes a first draft calibrated to The Backyard Steward voice, built around one myth/correction and one or two concrete changes, with inline source citations. Target length is ~2,100 words. Read the script first, then expand the Script Audit before running it through the pipeline.
     </div>
     <div class="field">
       <label class="field-label">Brief <span style="color:var(--accent2)">*</span></label>
@@ -369,7 +369,7 @@ Do this before writing a single word of script:
 
 SCRIPT STRUCTURE — follow every time:
 
-ACT 1 — HOOK (max 80 words)
+ACT 1 — HOOK (max 100 words)
 Open with a specific scene, image, or moment — not a concept. Establish the myth or misconception in a few short punches. End on a line that makes the viewer need to know what's actually true. Never resolve the myth in the hook.
 
 ACT 2 — BODY (majority of the script)
@@ -381,13 +381,13 @@ The pivot where the myth gets fully corrected and the action is stated plainly. 
 OUTRO
 A brief, warm close — 2 to 3 lines maximum. Ties back to something specific from the script. Encourages the viewer to try the one change and comment on what they notice. No motivational language, no guilt, no conceptual close.
 
-TARGET LENGTH: approximately 1,200–1,600 words excluding the sources section. This is a working default, not yet confirmed against a published episode — flag in the audit block if the brief seems to need more room than that.
+TARGET LENGTH: approximately 2,100 words excluding the sources section. This target was set directly by Graham/Angela (not an assumption) — this is the number to hit.
 
 WORD COUNT — follow this process before delivering:
 Step 1: Write the full draft.
 Step 2: Count the words (excluding sources section).
-Step 3: If the count is below 1,100 words, do NOT deliver. Expand the Core Beat buildup (the myth-debunk reasoning), and recount.
-Step 4: Repeat until the draft is between 1,100 and 1,700 words.
+Step 3: If the count is below 1,900 words, do NOT deliver. Expand the Core Beat buildup (the myth-debunk reasoning) and the Supporting Beat "why" sections, and recount.
+Step 4: Repeat until the draft is between 1,900 and 2,300 words.
 Step 5: Then deliver.
 
 SOURCING: Include a numbered SOURCES section at the bottom of the script. Do NOT include inline citation numbers in the script body. Sources list only at the bottom:
@@ -636,7 +636,7 @@ document.getElementById('btn-extract-clear').addEventListener('click', () => {
 });
 copyBtn('btn-extract-copy', () => savedExtractResult);
 
-// Tab 2 → Tab 3 handoff. Rebuilt to be tolerant of real model output drift:
+// Tab 2 → Tab 3 handoff. Tolerant of real model output drift:
 // (1) strips markdown bold before parsing, since the model sometimes wraps
 //     "#N | claim" headers in ** even when told not to, and (2) captures the
 //     FULL finding block (every line until the next claim or section header)
@@ -697,10 +697,8 @@ document.getElementById('btn-extract-to-verify').addEventListener('click', () =>
     }
 
     if (capturing) {
-      // Stop capturing at the next section header or divider line.
       if (/^(MED RISK|LOW RISK|HIGH RISK|REQUIRES MANUAL CHECK)/i.test(line) || /^[─═-]{3,}$/.test(line) || line === '') {
-        if (line === '' && findingLines.length === 0) continue; // tolerate a blank line right after "Finding:"
-        if (line === '') { capturing = false; continue; }
+        if (line === '' && findingLines.length === 0) continue;
         capturing = false;
         continue;
       }
